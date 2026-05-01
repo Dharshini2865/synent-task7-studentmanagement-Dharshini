@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Management System — Synent Internship Task 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f7f8fc;--surface:#fff;--surface2:#f0f2f8;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+    --text:#111827;--muted:#6b7280;
+    --accent:#2563eb;--accent-light:#eff6ff;--accent-border:#bfdbfe;
+    --green:#059669;--green-bg:#ecfdf5;--green-border:#a7f3d0;
+    --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+    --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+    --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;
+    --radius:10px;
+  }
+  body{background:var(--bg);min-height:100vh;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);}
+  .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+  /* Sidebar */
+  .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:0;display:flex;flex-direction:column;}
+  .sidebar-brand{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border);}
+  .sidebar-logo{font-size:15px;font-weight:700;color:var(--text)}
+  .sidebar-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .sidebar-nav{padding:.75rem .75rem;display:flex;flex-direction:column;gap:3px;flex:1}
+  .nav-btn{display:flex;align-items:center;gap:10px;padding:.6rem .75rem;border-radius:8px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+  .nav-btn:hover{background:var(--surface2);color:var(--text)}
+  .nav-btn.active{background:var(--accent-light);color:var(--accent);font-weight:600}
+  .nav-icon{font-size:15px;width:20px;text-align:center}
+  .nav-count{margin-left:auto;font-size:11px;background:var(--surface2);padding:1px 7px;border-radius:99px;color:var(--muted)}
+  .nav-btn.active .nav-count{background:var(--accent-border);color:var(--accent)}
+  .sidebar-footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+
+  /* Main */
+  .main{padding:2rem;overflow-y:auto}
+  .page-header{margin-bottom:1.5rem}
+  .page-title{font-size:22px;font-weight:700}
+  .page-sub{font-size:13px;color:var(--muted);margin-top:2px}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:1.5rem}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;}
+  .stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem}
+  .stat-num{font-size:22px;font-weight:700;color:var(--text)}
+  .stat-num.green{color:var(--green)}.stat-num.amber{color:var(--amber)}.stat-num.red{color:var(--red)}.stat-num.blue{color:var(--accent)}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+  .search-wrap{flex:1;min-width:180px;position:relative}
+  .search-input{width:100%;border:1px solid var(--border2);border-radius:8px;padding:.55rem .75rem .55rem 2.2rem;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;transition:border-color .2s;}
+  .search-input:focus{border-color:var(--accent)}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+  select{border:1px solid var(--border2);border-radius:8px;padding:.55rem .75rem;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;cursor:pointer;}
+  .btn{border:none;border-radius:8px;padding:.55rem 1rem;font-size:13px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+  .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#1d4ed8}
+  .btn-ghost{background:var(--surface);color:var(--muted);border:1px solid var(--border2)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+  .btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}.btn-danger:hover{background:#fee2e2}
+
+  /* Table */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  thead{background:var(--surface2)}
+  th{padding:.65rem 1rem;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);white-space:nowrap}
+  td{padding:.7rem 1rem;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafbff}
+
+  /* Avatar */
+  .avatar{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+
+  .mono{font-family:'Fira Code',monospace;font-size:12px}
+  .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
+  .ga{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+  .gb{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border)}
+  .gc{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+  .gd,.gf{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+
+  /* Mini subject bars */
+  .subj-bars{display:flex;gap:2px;align-items:flex-end;height:20px}
+  .subj-bar{width:8px;border-radius:2px 2px 0 0;transition:height .3s}
+
+  .marks-bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-top:3px;width:60px}
+  .marks-fill{height:100%;border-radius:2px}
+
+  .icon-btn{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;transition:background .15s;color:var(--muted)}
+  .icon-btn:hover.edit{background:var(--accent-light);color:var(--accent)}
+  .icon-btn:hover.del{background:var(--red-bg);color:var(--red)}
+  .icon-btn:hover.view{background:var(--green-bg);color:var(--green)}
+  .action-row{display:flex;gap:4px}
+  .empty-row td{text-align:center;padding:3rem;color:var(--muted);font-style:italic}
+
+  /* Panel system */
+  .panel{display:none}.panel.active{display:block}
+
+  /* Add form */
+  .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;max-width:600px}
+  .form-section{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:1.25rem 0 .75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .field input,.field select{border:1px solid var(--border2);border-radius:8px;padding:.6rem .85rem;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;background:var(--surface);}
+  .field input:focus,.field select:focus{border-color:var(--accent)}
+  .field-full{grid-column:span 2}
+  .grade-preview{font-size:12px;margin-top:3px;font-weight:600}
+  .form-actions{display:flex;gap:8px;margin-top:1.5rem}
+
+  /* Stats panel */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:640px}
+  .big-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+  .big-stat-val{font-size:32px;font-weight:700;margin-bottom:2px}
+  .big-stat-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+  .grade-dist{display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;display:none;align-items:center;justify-content:center;padding:1rem}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border-radius:16px;border:1px solid var(--border2);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:pop .2s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  .modal-head{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
+  .modal-title{font-size:16px;font-weight:700}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)}
+  .modal-body{padding:1.25rem 1.5rem}
+  .modal-foot{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+  /* Profile view inside modal */
+  .profile-top{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
+  .profile-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+  .profile-name{font-size:18px;font-weight:700}
+  .profile-id{font-size:12px;color:var(--muted);font-family:'Fira Code',monospace;margin-top:2px}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+  .info-item{background:var(--surface2);border-radius:8px;padding:.65rem .85rem}
+  .info-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+  .info-val{font-size:14px;font-weight:600;color:var(--text)}
+  .subj-list{display:flex;flex-direction:column;gap:8px}
+  .subj-row{display:flex;align-items:center;gap:10px}
+  .subj-name{font-size:12px;color:var(--muted);width:90px;flex-shrink:0}
+  .subj-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+  .subj-fill{height:100%;border-radius:3px}
+  .subj-mark{font-size:12px;font-weight:600;color:var(--text);width:30px;text-align:right;flex-shrink:0}
+
+  /* Toast */
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--text);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:13px;font-weight:500;z-index:200;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  @media(max-width:700px){.layout{grid-template-columns:1fr}.sidebar{display:none}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">Student Manager</div>
+      <div class="sidebar-sub">Synent Technologies · Task 7</div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-btn active" onclick="showPanel('students',this)"><span class="nav-icon">👥</span>All Students<span class="nav-count" id="sc-all">0</span></button>
+      <button class="nav-btn" onclick="showPanel('add',this)"><span class="nav-icon">➕</span>Add Student</button>
+      <button class="nav-btn" onclick="showPanel('stats',this)"><span class="nav-icon">📊</span>Statistics</button>
+    </div>
+    <div class="sidebar-footer">Data saved in browser · Task 7</div>
+  </div>
+
+  <div class="main">
+
+    <!-- Students panel -->
+    <div class="panel active" id="panel-students">
+      <div class="page-header">
+        <div class="page-title">Student Records</div>
+        <div class="page-sub">View, search, edit and manage all student data</div>
+      </div>
+      <div class="stats">
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-num" id="st-total">0</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Marks</div><div class="stat-num amber" id="st-avg">—</div></div>
+        <div class="stat-card"><div class="stat-label">Top Score</div><div class="stat-num green" id="st-top">—</div></div>
+        <div class="stat-card"><div class="stat-label">Passed</div><div class="stat-num blue" id="st-pass">—</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Attend.</div><div class="stat-num" id="st-att">—</div></div>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="search-input" type="text" placeholder="Search name, ID, email, course…" oninput="renderTable()"/>
+        </div>
+        <select id="grade-filter" onchange="renderTable()">
+          <option value="">All grades</option>
+          <option>A</option><option>B</option><option>C</option><option>D</option><option>F</option>
+        </select>
+        <select id="course-filter" onchange="renderTable()">
+          <option value="">All courses</option>
+          <option>Computer Science</option><option>Mathematics</option><option>Physics</option><option>Commerce</option><option>Biology</option>
+        </select>
+        <button class="btn btn-primary" onclick="showPanel('add',document.querySelectorAll('.nav-btn')[1])">+ Add</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th><th>ID</th><th>Course</th><th>Subjects</th><th>Avg Marks</th><th>Grade</th><th>Attend.</th><th>Added</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="student-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add panel -->
+    <div class="panel" id="panel-add">
+      <div class="page-header"><div class="page-title">Add New Student</div><div class="page-sub">Fill in complete student details</div></div>
+      <div class="form-card">
+        <div class="form-section">Personal Information</div>
+        <div class="field-grid">
+          <div class="field"><label>Full Name</label><input id="a-name" type="text" placeholder="e.g. Ravi Kumar"/></div>
+          <div class="field"><label>Age</label><input id="a-age" type="number" placeholder="18" min="5" max="100"/></div>
+          <div class="field"><label>Email Address</label><input id="a-email" type="email" placeholder="student@example.com"/></div>
+          <div class="field"><label>Phone</label><input id="a-phone" type="text" placeholder="+91 9876543210"/></div>
+          <div class="field field-full"><label>Address</label><input id="a-address" type="text" placeholder="City, State"/></div>
+        </div>
+        <div class="form-section">Academic Information</div>
+        <div class="field-grid">
+          <div class="field"><label>Course / Department</label>
+            <select id="a-course">
+              <option>Computer Science</option><option>Mathematics</option><option>Physics</option><option>Commerce</option><option>Biology</option>
+            </select>
+          </div>
+          <div class="field"><label>Year / Semester</label>
+            <select id="a-year"><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select>
+          </div>
+          <div class="field"><label>Attendance (%)</label><input id="a-att" type="number" placeholder="85" min="0" max="100"/></div>
+          <div class="field"><label>Roll Number</label><input id="a-roll" type="text" placeholder="e.g. CS2024001"/></div>
+        </div>
+        <div class="form-section">Subject Marks (out of 100)</div>
+        <div class="field-grid">
+          <div class="field"><label>Subject 1 — Maths</label><input id="s1" type="number" placeholder="0-100" min="0" max="100" oninput="previewGrade()"/></div>
+          <div class="field"><label>Subject 2 — Science</label><input id="s2" type="number" placeholder="0-100" min="0" max="100" oninput="previewGrade()"/></div>
+          <div class="field"><label>Subject 3 — English</label><input id="s3" type="number" placeholder="0-100" min="0" max="100" oninput="previewGrade()"/></div>
+          <div class="field"><label>Subject 4 — Computer</label><input id="s4" type="number" placeholder="0-100" min="0" max="100" oninput="previewGrade()"/></div>
+          <div class="field"><label>Subject 5 — General</label><input id="s5" type="number" placeholder="0-100" min="0" max="100" oninput="previewGrade()"/></div>
+          <div class="field" style="justify-content:flex-end;padding-top:1.5rem">
+            <div id="grade-preview" style="font-size:13px;color:var(--muted)">Fill marks to see grade</div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="addStudent()" style="flex:1;justify-content:center;padding:.75rem">Add Student</button>
+          <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats panel -->
+    <div class="panel" id="panel-stats">
+      <div class="page-header"><div class="page-title">Class Statistics</div><div class="page-sub">Full performance overview</div></div>
+      <div class="stats-grid" id="stats-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- View modal -->
+<div class="overlay" id="view-overlay">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Student Profile</div><button class="modal-close" onclick="closeModal('view-overlay')">×</button></div>
+    <div class="modal-body" id="profile-body"></div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="overlay" id="edit-overlay">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">Edit Student</div><button class="modal-close" onclick="closeModal('edit-overlay')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="e-id"/>
+      <div class="field-grid" style="margin-bottom:1rem">
+        <div class="field"><label>Full Name</label><input id="e-name" type="text"/></div>
+        <div class="field"><label>Age</label><input id="e-age" type="number"/></div>
+        <div class="field"><label>Email</label><input id="e-email" type="email"/></div>
+        <div class="field"><label>Phone</label><input id="e-phone" type="text"/></div>
+        <div class="field"><label>Course</label>
+          <select id="e-course"><option>Computer Science</option><option>Mathematics</option><option>Physics</option><option>Commerce</option><option>Biology</option></select>
+        </div>
+        <div class="field"><label>Year</label>
+          <select id="e-year"><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select>
+        </div>
+        <div class="field"><label>Attendance (%)</label><input id="e-att" type="number" min="0" max="100"/></div>
+        <div class="field"><label>Roll Number</label><input id="e-roll" type="text"/></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Subject Marks</div>
+      <div class="field-grid">
+        <div class="field"><label>Maths</label><input id="e-s1" type="number" min="0" max="100"/></div>
+        <div class="field"><label>Science</label><input id="e-s2" type="number" min="0" max="100"/></div>
+        <div class="field"><label>English</label><input id="e-s3" type="number" min="0" max="100"/></div>
+        <div class="field"><label>Computer</label><input id="e-s4" type="number" min="0" max="100"/></div>
+        <div class="field"><label>General</label><input id="e-s5" type="number" min="0" max="100"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('edit-overlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var students = JSON.parse(localStorage.getItem('synent-sms-v2') || '[]');
+  var SUBJ = ['Maths','Science','English','Computer','General'];
+  var COLORS = ['#2563eb','#059669','#d97706','#7c3aed','#dc2626','#0891b2','#065f46','#92400e'];
+
+  function save(){ localStorage.setItem('synent-sms-v2', JSON.stringify(students)); }
+
+  function nextId(){
+    if(!students.length) return 'STU001';
+    var max=Math.max.apply(null,students.map(function(s){return parseInt(s.id.replace('STU',''));}));
+    return 'STU'+String(max+1).padStart(3,'0');
+  }
+
+  function avg(marks){ return marks.length ? Math.round(marks.reduce(function(a,b){return a+b;},0)/marks.length) : 0; }
+
+  function toGrade(m){
+    if(m>=90)return 'A';if(m>=75)return 'B';if(m>=60)return 'C';if(m>=40)return 'D';return 'F';
+  }
+
+  function gradeClass(g){ return {A:'ga',B:'gb',C:'gc',D:'gd',F:'gf'}[g]||'gc'; }
+
+  function marksColor(m){
+    if(m>=90)return '#059669';if(m>=75)return '#2563eb';if(m>=60)return '#d97706';return '#dc2626';
+  }
+
+  function avatarColor(name){
+    var i=name.charCodeAt(0)%COLORS.length; return COLORS[i];
+  }
+
+  function initials(name){
+    var parts=name.trim().split(' ');
+    return parts.length>=2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : name.substring(0,2).toUpperCase();
+  }
+
+  function showPanel(name, btn){
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+    document.getElementById('panel-'+name).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+    if(btn) btn.classList.add('active');
+    if(name==='students') renderTable();
+    if(name==='stats') renderStats();
+  }
+
+  function renderTable(){
+    var q=document.getElementById('search-input').value.toLowerCase();
+    var gf=document.getElementById('grade-filter').value;
+    var cf=document.getElementById('course-filter').value;
+    var filtered=students.filter(function(s){
+      var m=!q||s.name.toLowerCase().includes(q)||s.id.toLowerCase().includes(q)||s.email.toLowerCase().includes(q)||s.course.toLowerCase().includes(q)||s.roll.toLowerCase().includes(q);
+      var gm=!gf||s.grade===gf;
+      var cm=!cf||s.course===cf;
+      return m&&gm&&cm;
+    });
+
+    var tbody=document.getElementById('student-tbody');
+    if(!filtered.length){
+      tbody.innerHTML='<tr class="empty-row"><td colspan="9">No students found</td></tr>';
+    } else {
+      tbody.innerHTML=filtered.map(function(s){
+        var color=avatarColor(s.name);
+        var avgM=avg(s.subjects);
+        var pct=avgM;
+        var bars=s.subjects.map(function(m,i){
+          var h=Math.max(4,Math.round(m/100*20));
+          return '<div class="subj-bar" style="height:'+h+'px;background:'+marksColor(m)+'" title="'+SUBJ[i]+': '+m+'"></div>';
+        }).join('');
+        var attColor=s.attendance>=75?'var(--green)':s.attendance>=50?'var(--amber)':'var(--red)';
+        return '<tr>'+
+          '<td><div style="display:flex;align-items:center;gap:10px">'+
+            '<div class="avatar" style="background:'+color+'20;color:'+color+'">'+initials(s.name)+'</div>'+
+            '<div><div style="font-weight:600;font-size:13px">'+esc(s.name)+'</div>'+
+            '<div style="font-size:11px;color:var(--muted)">'+esc(s.roll)+'</div></div>'+
+          '</div></td>'+
+          '<td class="mono">'+s.id+'</td>'+
+          '<td><div style="font-size:12px">'+esc(s.course)+'</div><div style="font-size:11px;color:var(--muted)">'+esc(s.year)+'</div></td>'+
+          '<td><div class="subj-bars">'+bars+'</div></td>'+
+          '<td><div style="font-weight:700;font-size:14px">'+avgM+'</div><div class="marks-bar"><div class="marks-fill" style="width:'+pct+'%;background:'+marksColor(avgM)+'"></div></div></td>'+
+          '<td><span class="badge '+gradeClass(s.grade)+'">'+s.grade+'</span></td>'+
+          '<td style="font-weight:600;color:'+attColor+'">'+s.attendance+'%</td>'+
+          '<td style="font-size:12px;color:var(--muted)">'+s.added+'</td>'+
+          '<td><div class="action-row">'+
+            '<button class="icon-btn view" onclick="viewStudent(\''+s.id+'\')" title="View">👁</button>'+
+            '<button class="icon-btn edit" onclick="openEdit(\''+s.id+'\')" title="Edit">✏️</button>'+
+            '<button class="icon-btn del" onclick="delStudent(\''+s.id+'\')" title="Delete">🗑️</button>'+
+          '</div></td>'+
+        '</tr>';
+      }).join('');
+    }
+
+    // Update stats
+    var total=students.length;
+    var allAvg=students.map(function(s){return avg(s.subjects);});
+    var avgAll=allAvg.length?(allAvg.reduce(function(a,b){return a+b;},0)/allAvg.length).toFixed(1):'—';
+    var topScore=allAvg.length?Math.max.apply(null,allAvg):'—';
+    var passed=students.filter(function(s){return avg(s.subjects)>=40;}).length;
+    var allAtt=students.map(function(s){return s.attendance;});
+    var avgAtt=allAtt.length?Math.round(allAtt.reduce(function(a,b){return a+b;},0)/allAtt.length)+'%':'—';
+
+    document.getElementById('st-total').textContent=total;
+    document.getElementById('st-avg').textContent=avgAll;
+    document.getElementById('st-top').textContent=topScore;
+    document.getElementById('st-pass').textContent=total?passed+'/'+total:'—';
+    document.getElementById('st-att').textContent=avgAtt;
+    document.getElementById('sc-all').textContent=total;
+  }
+
+  function renderStats(){
+    var el=document.getElementById('stats-content');
+    if(!students.length){el.innerHTML='<p style="color:var(--muted);font-style:italic">No students yet.</p>';return;}
+    var allAvg=students.map(function(s){return avg(s.subjects);});
+    var a=parseFloat((allAvg.reduce(function(a,b){return a+b;},0)/allAvg.length).toFixed(1));
+    var top=Math.max.apply(null,allAvg),low=Math.min.apply(null,allAvg);
+    var pass=students.filter(function(s){return avg(s.subjects)>=40;}).length;
+    var grades={A:0,B:0,C:0,D:0,F:0};
+    students.forEach(function(s){grades[s.grade]++;});
+    var subjAvg=SUBJ.map(function(name,i){
+      var vals=students.map(function(s){return s.subjects[i]||0;});
+      return{name,avg:Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length)};
+    });
+
+    el.innerHTML=
+    '<div class="big-stat"><div class="big-stat-label">Class Average</div><div class="big-stat-val amber">'+a+'</div></div>'+
+    '<div class="big-stat"><div class="big-stat-label">Pass Rate</div><div class="big-stat-val green">'+Math.round(pass/students.length*100)+'%</div></div>'+
+    '<div class="big-stat"><div class="big-stat-label">Highest / Lowest</div><div class="big-stat-val" style="font-size:22px"><span style="color:var(--green)">'+top+'</span> / <span style="color:var(--red)">'+low+'</span></div></div>'+
+    '<div class="big-stat"><div class="big-stat-label">Grade Distribution</div><div class="grade-dist">'+
+      Object.entries(grades).map(function(e){return '<div><span class="badge '+gradeClass(e[0])+'">'+e[0]+'</span><div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">'+e[1]+'</div></div>';}).join('')+
+    '</div></div>'+
+    '<div class="big-stat" style="grid-column:span 2"><div class="big-stat-label" style="margin-bottom:.75rem">Subject-wise Average</div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px">'+
+        subjAvg.map(function(s){
+          return '<div style="display:flex;align-items:center;gap:10px">'+
+            '<span style="font-size:12px;color:var(--muted);width:80px;flex-shrink:0">'+s.name+'</span>'+
+            '<div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden">'+
+              '<div style="height:100%;width:'+s.avg+'%;background:'+marksColor(s.avg)+';border-radius:4px"></div>'+
+            '</div>'+
+            '<span style="font-size:13px;font-weight:600;width:28px;text-align:right">'+s.avg+'</span>'+
+          '</div>';
+        }).join('')+
+      '</div>'+
+    '</div>';
+  }
+
+  function previewGrade(){
+    var vals=[+document.getElementById('s1').value,+document.getElementById('s2').value,+document.getElementById('s3').value,+document.getElementById('s4').value,+document.getElementById('s5').value].filter(function(v){return !isNaN(v)&&v>=0&&v<=100;});
+    var el=document.getElementById('grade-preview');
+    if(!vals.length){el.textContent='Fill marks to see grade';el.style.color='var(--muted)';return;}
+    var a=avg(vals);var g=toGrade(a);
+    var labels={A:'Excellent',B:'Good',C:'Average',D:'Below Average',F:'Fail'};
+    el.textContent='Avg: '+a+' → Grade '+g+' ('+labels[g]+')';
+    el.style.color=marksColor(a);
+  }
+
+  function getSubjects(prefix){
+    return [1,2,3,4,5].map(function(i){return parseInt(document.getElementById(prefix+'s'+i).value)||0;});
+  }
+
+  function addStudent(){
+    var name=document.getElementById('a-name').value.trim();
+    var age=parseInt(document.getElementById('a-age').value);
+    var email=document.getElementById('a-email').value.trim();
+    var phone=document.getElementById('a-phone').value.trim()||'—';
+    var address=document.getElementById('a-address').value.trim()||'—';
+    var course=document.getElementById('a-course').value;
+    var year=document.getElementById('a-year').value;
+    var att=parseInt(document.getElementById('a-att').value);
+    var roll=document.getElementById('a-roll').value.trim();
+    var subjects=getSubjects('');
+
+    if(!name||name.length<2){toast('Enter a valid name');return;}
+    if(isNaN(age)||age<5||age>100){toast('Enter a valid age');return;}
+    if(!email||!email.includes('@')){toast('Enter a valid email');return;}
+    if(isNaN(att)||att<0||att>100){toast('Enter attendance (0-100)');return;}
+    if(!roll){toast('Enter roll number');return;}
+    var hasAnyMark=subjects.some(function(m){return m>0;});
+    if(!hasAnyMark){toast('Enter at least one subject mark');return;}
+
+    var avgM=avg(subjects);
+    students.push({
+      id:nextId(),name,age:String(age),email,phone,address,course,year,
+      attendance:att,roll,subjects,grade:toGrade(avgM),
+      added:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+    });
+    save();clearForm();toast('Student added!');
+    showPanel('students',document.querySelectorAll('.nav-btn')[0]);
+  }
+
+  function clearForm(){
+    ['a-name','a-age','a-email','a-phone','a-address','a-att','a-roll','s1','s2','s3','s4','s5'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('grade-preview').textContent='Fill marks to see grade';
+  }
+
+  function viewStudent(id){
+    var s=students.find(function(x){return x.id===id;});if(!s)return;
+    var color=avatarColor(s.name);
+    var avgM=avg(s.subjects);
+    var body=document.getElementById('profile-body');
+    body.innerHTML=
+      '<div class="profile-top">'+
+        '<div class="profile-avatar" style="background:'+color+'20;color:'+color+'">'+initials(s.name)+'</div>'+
+        '<div><div class="profile-name">'+esc(s.name)+'</div><div class="profile-id">'+s.id+' · '+esc(s.roll)+'</div></div>'+
+        '<span class="badge '+gradeClass(s.grade)+'" style="margin-left:auto;font-size:14px;padding:4px 14px">'+s.grade+'</span>'+
+      '</div>'+
+      '<div class="info-grid">'+
+        mkInfo('Age',s.age+' years')+mkInfo('Email',esc(s.email))+
+        mkInfo('Phone',esc(s.phone))+mkInfo('Address',esc(s.address))+
+        mkInfo('Course',esc(s.course))+mkInfo('Year',esc(s.year))+
+        mkInfo('Attendance',s.attendance+'%')+mkInfo('Overall Avg',avgM+' / 100')+
+      '</div>'+
+      '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Subject Performance</div>'+
+      '<div class="subj-list">'+
+        s.subjects.map(function(m,i){
+          return '<div class="subj-row">'+
+            '<span class="subj-name">'+SUBJ[i]+'</span>'+
+            '<div class="subj-track"><div class="subj-fill" style="width:'+m+'%;background:'+marksColor(m)+'"></div></div>'+
+            '<span class="subj-mark">'+m+'</span>'+
+          '</div>';
+        }).join('')+
+      '</div>'+
+      '<div style="margin-top:1rem;font-size:11px;color:var(--muted)">Added: '+s.added+'</div>';
+    document.getElementById('view-overlay').classList.add('open');
+  }
+
+  function mkInfo(label,val){
+    return '<div class="info-item"><div class="info-label">'+label+'</div><div class="info-val">'+val+'</div></div>';
+  }
+
+  function openEdit(id){
+    var s=students.find(function(x){return x.id===id;});if(!s)return;
+    document.getElementById('e-id').value=s.id;
+    document.getElementById('e-name').value=s.name;
+    document.getElementById('e-age').value=s.age;
+    document.getElementById('e-email').value=s.email;
+    document.getElementById('e-phone').value=s.phone==='—'?'':s.phone;
+    document.getElementById('e-course').value=s.course;
+    document.getElementById('e-year').value=s.year;
+    document.getElementById('e-att').value=s.attendance;
+    document.getElementById('e-roll').value=s.roll;
+    s.subjects.forEach(function(m,i){document.getElementById('e-s'+(i+1)).value=m;});
+    document.getElementById('edit-overlay').classList.add('open');
+  }
+
+  function saveEdit(){
+    var id=document.getElementById('e-id').value;
+    var s=students.find(function(x){return x.id===id;});if(!s)return;
+    var name=document.getElementById('e-name').value.trim();
+    var age=parseInt(document.getElementById('e-age').value);
+    var email=document.getElementById('e-email').value.trim();
+    if(!name||isNaN(age)||!email){toast('Fill required fields');return;}
+    s.name=name;s.age=String(age);s.email=email;
+    s.phone=document.getElementById('e-phone').value.trim()||'—';
+    s.course=document.getElementById('e-course').value;
+    s.year=document.getElementById('e-year').value;
+    s.attendance=parseInt(document.getElementById('e-att').value)||s.attendance;
+    s.roll=document.getElementById('e-roll').value.trim()||s.roll;
+    s.subjects=[1,2,3,4,5].map(function(i){return parseInt(document.getElementById('e-s'+i).value)||0;});
+    s.grade=toGrade(avg(s.subjects));
+    save();closeModal('edit-overlay');renderTable();toast('Student updated!');
+  }
+
+  function delStudent(id){
+    if(!confirm('Delete this student? This cannot be undone.'))return;
+    students=students.filter(function(s){return s.id!==id;});
+    save();renderTable();toast('Student deleted.');
+  }
+
+  function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+  function toast(msg){
+    var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+    setTimeout(function(){el.classList.remove('show');},2500);
+  }
+
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  // Click outside modal
+  document.querySelectorAll('.overlay').forEach(function(ov){
+    ov.addEventListener('click',function(e){if(e.target===this)closeModal(this.id);});
+  });
+
+  // Add demo data on first load
+  if(!students.length){
+    var demos=[
+      {name:'Priya Sharma',age:'20',email:'priya@example.com',phone:'+91 9876543210',address:'Chennai, TN',course:'Computer Science',year:'2nd Year',attendance:92,roll:'CS2024001',subjects:[95,88,92,97,90]},
+      {name:'Rahul Verma',age:'21',email:'rahul@example.com',phone:'+91 9123456789',address:'Mumbai, MH',course:'Mathematics',year:'3rd Year',attendance:78,roll:'MA2024002',subjects:[72,80,68,75,77]},
+      {name:'Ananya Singh',age:'19',email:'ananya@example.com',phone:'+91 9988776655',address:'Delhi, DL',course:'Physics',year:'1st Year',attendance:85,roll:'PH2024003',subjects:[65,70,60,68,72]},
+      {name:'Karthik Raj',age:'22',email:'karthik@example.com',phone:'+91 8877665544',address:'Coimbatore, TN',course:'Computer Science',year:'4th Year',attendance:95,roll:'CS2024004',subjects:[90,85,88,93,87]},
+      {name:'Meera Nair',age:'20',email:'meera@example.com',phone:'+91 7766554433',address:'Kochi, KL',course:'Commerce',year:'2nd Year',attendance:60,roll:'CO2024005',subjects:[42,38,45,50,40]},
+    ];
+    demos.forEach(function(d){
+      var avgM=avg(d.subjects);
+      students.push({id:nextId(),name:d.name,age:d.age,email:d.email,phone:d.phone,address:d.address,course:d.course,year:d.year,attendance:d.attendance,roll:d.roll,subjects:d.subjects,grade:toGrade(avgM),added:'30 Apr 2026'});
+    });
+    save();
+  }
+
+  renderTable();
+</script>
+</body>
+</html>
