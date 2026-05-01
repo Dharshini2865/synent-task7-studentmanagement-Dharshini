@@ -47,8 +47,12 @@ python student_management.py
 | 40–59  | D     |
 | 0–39   | F     |
 
+
 ## Data Storage
-Student records are stored in `students.csv` in the same folder. The file is created automatically when the first student is added.
+
+Student records are stored in `students.csv` in the same folder.
+A sample `students.csv` is included in this repo with demo data.
+The file is created automatically when the first student is added if it doesn't exist.
 
 ## Technologies Used
 - Python 3
